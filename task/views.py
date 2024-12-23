@@ -36,3 +36,11 @@ class TaskDetailView(APIView):
             return Response(TaskSerializer(updated_task).data, status=status.HTTP_200_OK)
 
         return Response(ser_data.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TaskDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, slug):
+        task = get_object_or_404(Task, user=request.user, slug=slug)
+        task.delete()
+        return Response("The task was successfully deleted", status=status.HTTP_202_ACCEPTED)
