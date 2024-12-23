@@ -5,17 +5,19 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 
-from .models import Task, Favorite
+from .models import Task, Category, Favorite
 from .serializers import TaskSerializer
 
 class TaskView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, category_slug=None):
         tasks = Task.objects.filter(user=request.user)
+        if category_slug:
+            category = get_object_or_404(Category, slug=category_slug)
+            tasks = Task.objects.filter(user=request.user, category=category)
         ser_tasks = TaskSerializer(instance=tasks, many=True)
         return Response(ser_tasks.data)
-
 
 class TaskDetailView(APIView):
     permission_classes = [IsAuthenticated]
