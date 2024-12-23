@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Task
+from .models import Task, Favorite
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
@@ -9,3 +9,7 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ["title", "description"]
     prepopulated_fields = {"slug":("title",)}
     ordering = ["created", "completed"]
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_select_related = ["user", "task"]

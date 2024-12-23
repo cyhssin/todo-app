@@ -11,4 +11,12 @@ class Task(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} created by {self.user}"    
+        return f"{self.title} created by {self.user}"
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="task_favorite")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="favorite_by")
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.task.title} favorite by {self.user.username}"    

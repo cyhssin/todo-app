@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 
-from .models import Task
+from .models import Task, Favorite
 from .serializers import TaskSerializer
 
 class TaskView(APIView):
@@ -44,3 +44,16 @@ class TaskDeleteView(APIView):
         task = get_object_or_404(Task, user=request.user, slug=slug)
         task.delete()
         return Response("The task was successfully deleted", status=status.HTTP_202_ACCEPTED)
+
+class TaskFavoriteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, slug):
+        task = get_object_or_404(Task, user=request.user, slug=slug)
+        favorite = Favorite.objects.filter(user=request.user, task=task)
+
+        if favorite.exists():
+            favorite.delete()
+            return Response("Removed task")
+        Favorite.objects.create(user=request.user, task=task)
+        return Response("Added task")
