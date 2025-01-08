@@ -7,7 +7,12 @@ from rest_framework import status
 from django.core.mail import send_mail
 from django.conf import settings
 
-from .serializers import UserSerializer, OTPVerificationSerializer, LoginSerializer, LogoutSerializer
+from .serializers import (UserSerializer,
+    OTPVerificationSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+    PasswordResetSerializer,
+    ChangePasswordSerializer)
 from .authentication import authenticate
 from .models import User, OtpCode
 
@@ -80,3 +85,29 @@ class UserLogoutView(APIView):
             token.blacklist()
             return Response({"message": "you logged out successfully!!"}, status=status.HTTP_200_OK)
         return Response(data=ser_data.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserPasswordRestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "OTP has been sent to your email"}, 
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Password has been reset successfully"}, 
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
