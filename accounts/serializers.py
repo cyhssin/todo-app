@@ -1,12 +1,13 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+
+from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={"input_type": "password"}, write_only=True) 
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "password2"] 
+        fields = ["email", "sur_name", "for_name", "password", "password2"] 
         extra_kwargs = {"password": {"write_only": True}} 
 
     def validate(self, attrs):
@@ -19,12 +20,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User(
-            username=validated_data["username"],
-            email=validated_data["email"]
+            email=validated_data["email"],
+            sur_name=validated_data["sur_name"],
+            for_name=validated_data["for_name"]
         )
         user.set_password(validated_data["password"]) 
         user.save()
         return user
+
+class OTPVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp_code = serializers.CharField(max_length=6)
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()

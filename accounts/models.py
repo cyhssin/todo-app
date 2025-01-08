@@ -7,7 +7,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     sur_name = models.CharField(max_length=255)
     for_name = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
 
     objects = UserManager()
@@ -28,4 +28,4 @@ class OtpCode(models.Model):
 	created = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return f"{self.phone_number} - {self.code} - {self.created}"
+		return f"{self.email} - {self.code} - {self.created}"
