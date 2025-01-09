@@ -1,0 +1,12 @@
+Package                       Version
+----------------------------- -------
+asgiref                       3.8.1
+dj-rest-auth                  2.1.11
+Django                        5.1.4
+django-rest-authtoken         2.1.4
+djangorestframework           3.15.2
+djangorestframework-simplejwt 5.3.1
+pip                           24.3.1
+PyJWT                         2.10.1
+python-decouple               3.8
+sqlparse                      0.5.3
