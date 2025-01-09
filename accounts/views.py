@@ -23,16 +23,7 @@ class UserRegistrationView(APIView):
         ser_data = UserSerializer(data=request.data)
 
         if ser_data.is_valid():
-            user = ser_data.save()
-            otp_code = random.randint(10000, 99999)
-            OtpCode.objects.create(email=user.email, code=otp_code)
-            send_mail(
-                "Your OTP Code",
-                f"Your OTP code for account activation is {otp_code}.",
-                settings.EMAIL_HOST_USER,
-                [user.email],
-                fail_silently=False,
-            )
+            ser_data.save()
             return Response({"message": "Please check your email for the OTP."}, status=status.HTTP_201_CREATED)
         return Response(ser_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -41,20 +32,13 @@ class OTPVerificationView(APIView):
 
     def post(self, request):
         ser_data = OTPVerificationSerializer(data=request.data)
-        
         if ser_data.is_valid():
-            email = ser_data.validated_data["email"]
-            code_instance = OtpCode.objects.get(email=email)
-            otp = int(ser_data.validated_data["otp_code"])
-            user = User.objects.get(email=email)
-
-            if otp == code_instance.code:
-                user.is_active = True
-                user.save()
-                code_instance.delete()
-                return Response({"message": "Account activated successfully!"}, status=status.HTTP_200_OK)
-        return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
-
+            ser_data.save()
+            return Response(
+                {"message": "Your account has been activated"}, 
+                status=status.HTTP_200_OK
+            )
+        return Response(ser_data.errors, status=status.HTTP_400_BAD_REQUEST)
 class UserLoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -90,24 +74,25 @@ class UserPasswordRestView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = PasswordResetSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        ser_data = PasswordResetSerializer(data=request.data)
+
+        if ser_data.is_valid():
+            ser_data.save()
             return Response(
                 {"message": "OTP has been sent to your email"}, 
                 status=status.HTTP_200_OK
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ser_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        ser_data = ChangePasswordSerializer(data=request.data)
+        if ser_data.is_valid():
+            ser_data.save()
             return Response(
                 {"message": "Password has been reset successfully"}, 
                 status=status.HTTP_200_OK
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ser_data.errors, status=status.HTTP_400_BAD_REQUEST)

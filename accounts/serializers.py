@@ -19,20 +19,52 @@ class UserSerializer(serializers.ModelSerializer):
         if password != password2:
             raise serializers.ValidationError({"password": "Passwords must match"})
         return attrs
-
-    def create(self, validated_data):
-        user = User(
-            email=validated_data["email"],
-            sur_name=validated_data["sur_name"],
-            for_name=validated_data["for_name"]
+        
+    def save(self):
+        email = self.validated_data["email"]
+        # Generate OTP using model method
+        otp_instance = OtpCode.generate_otp(email)
+        
+        # Send email
+        send_mail(
+            "Password Reset OTP",
+            f"Your OTP code for active account is: {otp_instance.code}",
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
         )
-        user.set_password(validated_data["password"]) 
+        
+        # Create object user
+        user = User(
+            email=self.validated_data["email"],
+            sur_name=self.validated_data["sur_name"],
+            for_name=self.validated_data["for_name"]
+        )
+        user.set_password(self.validated_data["password"]) 
         user.save()
         return user
 
 class OTPVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp_code = serializers.CharField(max_length=6)
+
+    def validate(self, data):
+        try:
+            otp_obj = OtpCode.objects.get(email=data["email"])
+            if otp_obj.code != data["otp_code"]:
+                raise serializers.ValidationError("Invalid OTP")
+        except OtpCode.DoesNotExist:
+            raise serializers.ValidationError("Invalid OTP")
+        return data
+
+    def save(self):
+        email = self.validated_data["email"]
+        user = User.objects.get(email=email)
+        user.is_active = True
+        user.save()
+
+        # Delete used OTP
+        OtpCode.objects.filter(email=email).delete()
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
